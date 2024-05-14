@@ -1,0 +1,14 @@
+workspace = { members = ["strut-macro","enum-macro"] }
+[package]
+name = "erge"
+version = "0.1.0"
+edition = "2021"
+description = "This is a macro tools for rust"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/chenjitong/erge"
+documentation = "https://docs.rs/erge"
+
+[dependencies]
+strut-macro = {path = "strut-macro", version = "0.1.0"}
+enum-macro = {path = "enum-macro", version = "0.1.0"}
