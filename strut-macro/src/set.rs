@@ -2,9 +2,9 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput};
 
-use crate::util::field::{chk_named_st, chk_st};
+use crate::util::field::{chk_named_st, chk_st, get_skip_named_fields};
 
-pub (crate) fn set_filename (input: TokenStream) -> TokenStream {
+pub (crate) fn set_field (input: TokenStream) -> TokenStream {
     // 解析结构体的抽象语法树
     let drive_ast = parse_macro_input!(input as DeriveInput);
 
@@ -13,6 +13,10 @@ pub (crate) fn set_filename (input: TokenStream) -> TokenStream {
 
     // 检查是否普通结构体
     let fields = chk_named_st (ast_dt); // 成员列表
+    println!("begin {:?}", fields.named.iter ().count ());
+    get_skip_named_fields (fields);
+    println!("end {:?}", fields.named.iter ().count ());
+
 
     let st_name = &drive_ast.ident; // 结构体名
 
