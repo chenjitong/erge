@@ -2,10 +2,12 @@ use strut_macro::{Get, Set};
 
 #[derive(Debug, Get, Set)]
 struct TSet {
-    #[Skip]
-    #[Mut]
+    // #[Skip = "skip"]
+    // #[Skip, Mut]
+    #[Skip] #[Mut]
     v1: String,
     v2: String,
+    #[Mut(hello, world)]
     v3: String,
 }
 
@@ -22,7 +24,8 @@ mod tests {
             v3: "c".to_string(),
         };
         println!("{:?}", t);
-        t.set_v1("a1".to_string());
+        // t.set_v1("a1".to_string());
+        t.set_v2("jfkdsl".to_string());
         println!("{:?}", t);
         println!("{:?}", t.get_v1());
         println!("{:?}", t.get_v2());
