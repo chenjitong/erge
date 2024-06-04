@@ -4,10 +4,10 @@ use strut_macro::{Get, Set};
 struct TSet {
     // #[Skip = "skip"]
     // #[Skip, Mut]
-    #[Skip] #[Mut]
+    #[Skip]
     v1: String,
+    #[Trim]
     v2: String,
-    #[Mut(hello, world)]
     v3: String,
 }
 

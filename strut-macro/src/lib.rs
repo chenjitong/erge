@@ -8,7 +8,15 @@ mod get;
 mod set;
 mod util;
 
-#[proc_macro_derive(Set, attributes(Skip, Mut))]
+const SET : &str = "Set";
+const GET : &str = "Get";
+const SKIP : &str = "Skip";
+const TRIM : &str = "Trim";
+const ATTRS: [&str; 2] = [SKIP, TRIM];
+const TRIM_TYPES: [&str; 1] = ["String"];
+const SKIP_ENABLE: [&str; 2] = [SET, GET];
+
+#[proc_macro_derive(Set, attributes(Skip, Trim))]
 pub fn setter(input: TokenStream) -> TokenStream {
     set_field(input)
 }
