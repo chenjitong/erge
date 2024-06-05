@@ -1,8 +1,9 @@
 use core::panic;
 
+use quote::ToTokens;
 use syn::{Data, DataStruct, DeriveInput, Field, Fields, FieldsNamed};
 
-use crate::{ATTRS, NO_CHAIN, SKIP, SKIP_ENABLE};
+use crate::{ATTRS, NO_CHAIN, SKIP, SKIP_ENABLE, TRIM};
 
 /// 判断是否为结构体，是则返回 ast 的 DataStruct
 ///
@@ -104,6 +105,30 @@ pub (crate) fn is_skip_ident (field: &Field, ident: &str) -> bool {
         Ok (())
     });
     rs
+}
+
+pub (crate) fn is_field_trim (field: &Field) -> bool {
+    println!("is_field_trim {:?}", field.ty.to_token_stream ());
+    match &field.ty {
+        syn::Type::Array (_) => println!("is 1"),
+        syn::Type::BareFn (_) => println!("is 2"),
+        syn::Type::Group (_) => println!("is 3"),
+        syn::Type::ImplTrait (_) => println!("is 4"),
+        syn::Type::Infer (_) => println!("is 5"),
+        syn::Type::Macro (_) => println!("is 6"),
+        syn::Type::Never (_) => println!("is 7"),
+        syn::Type::Paren (_) => println!("is 8"),
+        syn::Type::Path (x) => println!("is 9 {:?}", x.path.is_ident ("String")),
+        syn::Type::Ptr (_) => println!("is 10"),
+        syn::Type::Reference (x) => println!("is 11 {:?}", x.elem.to_token_stream ()),
+        syn::Type::Slice (_) => println!("is 12"),
+        syn::Type::TraitObject (_) => println!("is 13"),
+        syn::Type::Tuple (_) => println!("is 14"),
+        syn::Type::Verbatim (_) => println!("is 15"),
+        _ => println!("is _"),
+    };
+    let trim = field_has_attr (field, TRIM);
+    trim
 }
 
 pub (crate) fn field_has_attr (field: &Field, attr: &str) -> bool {

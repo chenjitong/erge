@@ -1,7 +1,7 @@
 use strut_macro::{Get, Set};
 
 #[derive (Debug, Get, Set)]
-struct TSet {
+struct TSet<'a> {
     #[Skip [Set, Get]] //v1 skip Set and Get
     v1: String,
     #[Trim]
@@ -10,6 +10,8 @@ struct TSet {
     v3: String,
     #[Skip] //v4 skip all
     v4: bool,
+    #[Trim]
+    pub v5: &'a str,
 }
 
 #[cfg (test)]
@@ -24,6 +26,7 @@ mod tests {
             v2: "b".to_string (),
             v3: "c".to_string (),
             v4: false,
+            v5: "b",
         };
         println!("{:?}", t);
         //t.set_v1 ("a1".to_string ()); //skipped
