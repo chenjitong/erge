@@ -2,9 +2,10 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput};
 
+#[allow (unused_imports)]
 use crate::{
     util::field::{chk_named_st, chk_st, field_has_attr, get_fields, is_field_trim},
-    NO_CHAIN, SET, TRIM,
+    NO_CHAIN, SET,
 };
 
 pub (crate) fn set_field (input: TokenStream) -> TokenStream {
@@ -31,7 +32,7 @@ pub (crate) fn set_field (input: TokenStream) -> TokenStream {
         let f_ty = f.ty.to_owned (); // 成员类型
         let f_fns_name = format_ident!("set_{}", f_name); // 成员 set 函数名
 
-        let _ = is_field_trim (f);
+        //let _ = is_field_trim (f);
 
         // 成员 set 函数 ast
         match field_has_attr (f, NO_CHAIN) {

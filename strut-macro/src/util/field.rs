@@ -1,9 +1,10 @@
 use core::panic;
+use std::ops::Deref;
 
 use quote::ToTokens;
-use syn::{Data, DataStruct, DeriveInput, Field, Fields, FieldsNamed};
+use syn::{Data, DataStruct, DeriveInput, Field, Fields, FieldsNamed, Type};
 
-use crate::{ATTRS, NO_CHAIN, SKIP, SKIP_ENABLE, TRIM};
+use crate::{ATTRS, NO_CHAIN, SKIP, SKIP_ENABLE};
 
 /// 判断是否为结构体，是则返回 ast 的 DataStruct
 ///
@@ -107,28 +108,101 @@ pub (crate) fn is_skip_ident (field: &Field, ident: &str) -> bool {
     rs
 }
 
+#[allow (dead_code)]
 pub (crate) fn is_field_trim (field: &Field) -> bool {
-    println!("is_field_trim {:?}", field.ty.to_token_stream ());
+    println!("{:?}\n", field.to_token_stream ());
     match &field.ty {
-        syn::Type::Array (_) => println!("is 1"),
-        syn::Type::BareFn (_) => println!("is 2"),
-        syn::Type::Group (_) => println!("is 3"),
-        syn::Type::ImplTrait (_) => println!("is 4"),
-        syn::Type::Infer (_) => println!("is 5"),
-        syn::Type::Macro (_) => println!("is 6"),
-        syn::Type::Never (_) => println!("is 7"),
-        syn::Type::Paren (_) => println!("is 8"),
-        syn::Type::Path (x) => println!("is 9 {:?}", x.path.is_ident ("String")),
-        syn::Type::Ptr (_) => println!("is 10"),
-        syn::Type::Reference (x) => println!("is 11 {:?}", x.elem.to_token_stream ()),
-        syn::Type::Slice (_) => println!("is 12"),
-        syn::Type::TraitObject (_) => println!("is 13"),
-        syn::Type::Tuple (_) => println!("is 14"),
-        syn::Type::Verbatim (_) => println!("is 15"),
+        Type::Array (_) => println!("is 1"),
+        Type::BareFn (_) => println!("is 2"),
+        Type::Group (_) => println!("is 3"),
+        Type::ImplTrait (_) => println!("is 4"),
+        Type::Infer (_) => println!("is 5"),
+        Type::Macro (_) => println!("is 6"),
+        Type::Never (_) => println!("is 7"),
+        Type::Paren (_) => println!("is 8"),
+        Type::Path (x) => {
+            if x.qself.is_none () {
+                println!(
+                    "is 9 {:?} {:?} {:?}",
+                    x.path.get_ident ().to_token_stream (),
+                    field.ident.to_token_stream (),
+                    x.path.segments.to_token_stream ()
+                );
+                x.path.segments.iter ().for_each (|s| {
+                    println!(
+                        "in this loop: {:?}",
+                        s.ident.to_string ()
+                    );
+                    match &s.arguments {
+                        syn::PathArguments::AngleBracketed (a) => {
+                            println!("analeBracketed\n");
+                            a.args.iter ().for_each (|args| match &args {
+                                syn::GenericArgument::Lifetime (_) => println!("lifetime"),
+                                syn::GenericArgument::Type (t) => {
+                                    match t {
+                                        Type::Path (p)=>{
+                                            println!("{:}", p.path.get_ident ().to_token_stream ());
+                                        }
+                                        Type::Reference (r)=>{
+                                            match r.elem.deref () {
+                                                Type::Array (_) => println!("array"),
+                                                Type::BareFn (_) => println!("barefn"),
+                                                Type::Group (_) => println!("group"),
+                                                Type::ImplTrait (_) => println!("impltrait"),
+                                                Type::Infer (_) => println!("infer"),
+                                                Type::Macro (_) => println!("macro"),
+                                                Type::Never (_) => println!("never"),
+                                                Type::Paren (_) => println!("paren"),
+                                                Type::Path (k) => {
+                                                    println!("{:}", k.path.get_ident ().to_token_stream ())
+                                                },
+                                                Type::Ptr (_) => println!("ptr"),
+                                                Type::Reference (_) => println!("reference"),
+                                                Type::Slice (_) => println!("slice"),
+                                                Type::TraitObject (_) => println!("traitobject"),
+                                                Type::Tuple (_) => println!("tuple"),
+                                                Type::Verbatim (_) => println!("verbatim"),
+                                                _ => println!(""),
+                                            }
+                                        }
+                                        _=>(),
+                                    }
+                                }
+                                syn::GenericArgument::Const (_) => println!("const"),
+                                syn::GenericArgument::AssocType (_) => println!("assoctype"),
+                                syn::GenericArgument::AssocConst (_) => println!("assocconst"),
+                                syn::GenericArgument::Constraint (_) => println!("constraint"),
+                                _ => todo!(),
+                            });
+                        }
+                        _ => (),
+                    }
+                });
+            } else {
+                println!(
+                    "is 9 {:?} {:?} {:?}",
+                    x.path.get_ident ().to_token_stream (),
+                    field.ident.to_token_stream (),
+                    x.qself.clone ().unwrap ().position.to_token_stream ()
+                )
+            }
+        }
+        Type::Ptr (_) => println!("is 10"),
+        Type::Reference (x) => println!(
+            "is 11 {:?} {:}",
+            x.elem.to_token_stream (),
+            field.ident.to_token_stream ()
+        ),
+        Type::Slice (_) => println!("is 12"),
+        Type::TraitObject (_) => println!("is 13"),
+        Type::Tuple (_) => println!("is 14"),
+        Type::Verbatim (_) => println!("is 15"),
         _ => println!("is _"),
     };
-    let trim = field_has_attr (field, TRIM);
-    trim
+    println!("\n");
+    //let trim = field_has_attr (field, TRIM);
+    //trim
+    false
 }
 
 pub (crate) fn field_has_attr (field: &Field, attr: &str) -> bool {
