@@ -1,13 +1,14 @@
 #[warn (unused_imports)]
 use strut_macro::{Get, Mut, Set};
 
+#[allow(dead_code)]
 struct Kkk {
     v1: String,
 }
 
 #[derive (Debug, Set, Get, Mut)]
 struct TSet<'a> {
-    #[Skip [Get]] //v1 skip Set and Get
+    #[Skip[Mut]] //v1 skip Set and Get
     v1: String,
     #[Trim]
     v2: String,
@@ -30,13 +31,15 @@ struct TSet<'a> {
 #[cfg (test)]
 mod tests {
 
+    use std::ops::Deref;
+
     use crate::Kkk;
 
     use super::TSet;
 
     #[test]
     fn test_t_set () {
-        let k = Kkk {v1:"v1".to_string (),};
+        let _ = Kkk {v1:"v1".to_string (),};
         //let binding = String::from ("this is v7 means the Box");
         let mut t = TSet {
             v1: "a".to_string (),
@@ -50,7 +53,7 @@ mod tests {
             //v9 : Box::new (&binding),
         };
         println!("{:?}", t);
-        t.set_v2();
+        // t.set_v2();
         let _ = t.get_v6 ();
         //let _ = t.get_v1 ();
         t.set_v1 ("a1".to_string ()); //skipped
@@ -61,7 +64,7 @@ mod tests {
         //println!("{:?}", t.get_v3 ());
         t.set_v2 ("v2".to_string ()).set_v3 ("v3".to_string ()); //v2 可以链式调用
         t.set_v3 ("v3".to_string ()); //v3 no chain 不能链式调用
-        //let _ = t.get_v7 ().deref ();
+        let _ = t.get_v7 ().deref();
         //let _ = *t.v7;
     }
 }
