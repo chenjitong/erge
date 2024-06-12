@@ -2,12 +2,14 @@ extern crate proc_macro;
 
 use get::get_field;
 use get_mut::get_mut_field;
+use new::new_all;
 use proc_macro::TokenStream;
 use set::set_field;
 use with::with_field;
 
 mod get;
 mod get_mut;
+mod new;
 mod set;
 mod util;
 mod with;
@@ -43,4 +45,9 @@ pub fn getter_mut(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(With, attributes(Skip, Trim))]
 pub fn wither(input: TokenStream) -> TokenStream {
     with_field(input)
+}
+
+#[proc_macro_derive(New)]
+pub fn new(input: TokenStream) -> TokenStream {
+    new_all(input)
 }

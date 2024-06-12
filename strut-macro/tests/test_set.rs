@@ -1,11 +1,29 @@
-use strut_macro::{Get, Mut, Set, With};
+use strut_macro::{Get, Mut, New, Set, With};
 
 #[derive(Debug)]
 struct Kkk {
     v1: String,
 }
 
-#[derive(Debug, Set, Get, Mut, With)]
+impl Default for Kkk {
+    fn default() -> Self {
+        todo!()
+    }
+}
+
+impl Kkk {
+    /// Creates a new [`Kkk`].
+    fn new(v1: String) -> Self {
+        Self { v1 }
+    }
+
+    /// Creates a new [`Kkk`].
+    fn new_default() -> Self {
+        Self { v1: "".to_owned() }
+    }
+}
+
+#[derive(Debug, Set, Get, Mut, With, New)]
 struct TSet<'a> {
     #[Skip [Get]] //v1 skip Set and Get
     v1: String,
@@ -40,6 +58,8 @@ mod tests {
         let k = Kkk {
             v1: "v1".to_string(),
         };
+        let _ = Kkk::new("v1".to_owned());
+        let _ = Kkk::new_default();
         println!("{:?} {:?}", k, k.v1);
         //let binding = String::from ("this is v7 means the Box");
         let mut t = TSet {
@@ -80,5 +100,16 @@ mod tests {
 
         t.set_v8("   v8 has trim   ");
         println!("v8 has trim {:?}", t.get_v8());
+
+        let binding = "v6".to_owned();
+        let test_new = TSet::new(
+            "v1".to_owned(),
+            "v2".to_owned(),
+            "v3".to_owned(),
+            &binding,
+            "v7".to_owned(),
+            "v8",
+        );
+        println!("{:?} {:?} {:?}", file!(), line!(), test_new);
     }
 }
