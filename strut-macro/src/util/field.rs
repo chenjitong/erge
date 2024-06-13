@@ -1,10 +1,10 @@
 use core::panic;
-use std::ops::Deref;
 
-use quote::ToTokens;
+use proc_macro2::TokenStream;
+use quote::quote;
 use syn::{Data, DataStruct, DeriveInput, Field, Fields, FieldsNamed, Type};
 
-use crate::{ATTRS, NO_CHAIN, SKIP, SKIP_ENABLE};
+use crate::{ATTRS, SKIP, SKIP_ENABLE, TRIM, TRIM_STR, TRIM_STRING};
 
 /// 判断是否为结构体，是则返回 ast 的 DataStruct
 ///
@@ -41,7 +41,7 @@ pub(crate) fn chk_named_st(ast_dt: &DataStruct) -> &FieldsNamed {
 ///
 /// Panics if the same attribute was settled more than once
 pub(crate) fn chk_field_attr(field: &Field) -> bool {
-    if field.attrs.len() == 0 {
+    if field.attrs.is_empty() {
         // 可以不设属性
         return true;
     };
@@ -73,7 +73,7 @@ pub(crate) fn is_skip_ident(field: &Field, ident: &str) -> bool {
         panic!("Skip attribute only enabled for {:?}", SKIP_ENABLE);
     }
 
-    if field.attrs.len() == 0 {
+    if field.attrs.is_empty() {
         //no any attributes means no skip
         return false;
     };
@@ -108,94 +108,41 @@ pub(crate) fn is_skip_ident(field: &Field, ident: &str) -> bool {
     rs
 }
 
-#[allow(dead_code)]
-pub(crate) fn is_field_trim(field: &Field) -> bool {
-    println!("{:?}\n", field.to_token_stream());
+pub(crate) fn get_field_trim(field: &Field) -> TokenStream {
+    let f_name = field.ident.to_owned().unwrap();
+
+    if !field_has_attr(field, TRIM) {
+        return quote! {#f_name};
+    }
+
     match &field.ty {
-        Type::Array(_) => println!("is 1"),
-        Type::BareFn(_) => println!("is 2"),
-        Type::Group(_) => println!("is 3"),
-        Type::ImplTrait(_) => println!("is 4"),
-        Type::Infer(_) => println!("is 5"),
-        Type::Macro(_) => println!("is 6"),
-        Type::Never(_) => println!("is 7"),
-        Type::Paren(_) => println!("is 8"),
         Type::Path(x) => {
             if x.qself.is_none() {
-                println!(
-                    "is 9 {:?} {:?} {:?}",
-                    x.path.get_ident().to_token_stream(),
-                    field.ident.to_token_stream(),
-                    x.path.segments.to_token_stream()
-                );
-                x.path.segments.iter().for_each(|s| {
-                    println!("in this loop: {:?}", s.ident.to_string());
-                    match &s.arguments {
-                        syn::PathArguments::AngleBracketed(a) => {
-                            println!("analeBracketed\n");
-                            a.args.iter().for_each(|args| match &args {
-                                syn::GenericArgument::Lifetime(_) => println!("lifetime"),
-                                syn::GenericArgument::Type(t) => match t {
-                                    Type::Path(p) => {
-                                        println!("{:}", p.path.get_ident().to_token_stream());
-                                    }
-                                    Type::Reference(r) => match r.elem.deref() {
-                                        Type::Array(_) => println!("array"),
-                                        Type::BareFn(_) => println!("barefn"),
-                                        Type::Group(_) => println!("group"),
-                                        Type::ImplTrait(_) => println!("impltrait"),
-                                        Type::Infer(_) => println!("infer"),
-                                        Type::Macro(_) => println!("macro"),
-                                        Type::Never(_) => println!("never"),
-                                        Type::Paren(_) => println!("paren"),
-                                        Type::Path(k) => {
-                                            println!("{:}", k.path.get_ident().to_token_stream())
-                                        }
-                                        Type::Ptr(_) => println!("ptr"),
-                                        Type::Reference(_) => println!("reference"),
-                                        Type::Slice(_) => println!("slice"),
-                                        Type::TraitObject(_) => println!("traitobject"),
-                                        Type::Tuple(_) => println!("tuple"),
-                                        Type::Verbatim(_) => println!("verbatim"),
-                                        _ => println!(""),
-                                    },
-                                    _ => (),
-                                },
-                                syn::GenericArgument::Const(_) => println!("const"),
-                                syn::GenericArgument::AssocType(_) => println!("assoctype"),
-                                syn::GenericArgument::AssocConst(_) => println!("assocconst"),
-                                syn::GenericArgument::Constraint(_) => println!("constraint"),
-                                _ => todo!(),
-                            });
-                        }
-                        _ => (),
+                if x.path.is_ident(TRIM_STRING) {
+                    quote! {
+                        #f_name.trim().to_string()
                     }
-                });
+                } else {
+                    panic!("Trim Attribute can only support [String] [&str] type!");
+                }
             } else {
-                println!(
-                    "is 9 {:?} {:?} {:?}",
-                    x.path.get_ident().to_token_stream(),
-                    field.ident.to_token_stream(),
-                    x.qself.clone().unwrap().position.to_token_stream()
-                )
+                panic!("Trim Attribute can't support qself style!");
             }
         }
-        Type::Ptr(_) => println!("is 10"),
-        Type::Reference(x) => println!(
-            "is 11 {:?} {:}",
-            x.elem.to_token_stream(),
-            field.ident.to_token_stream()
-        ),
-        Type::Slice(_) => println!("is 12"),
-        Type::TraitObject(_) => println!("is 13"),
-        Type::Tuple(_) => println!("is 14"),
-        Type::Verbatim(_) => println!("is 15"),
-        _ => println!("is _"),
-    };
-    println!("\n");
-    //let trim = field_has_attr (field, TRIM);
-    //trim
-    false
+        Type::Reference(x) => match *x.elem.clone() {
+            Type::Path(e) => {
+                if e.path.is_ident(TRIM_STR) {
+                    quote! {
+                        #f_name.trim()
+                    }
+                } else {
+                    panic!("Trim Attribute can only support [String] [&str] type!");
+                }
+            }
+            _ => panic!("Trim Attribute can only support [String] [&str] type!"),
+        },
+        _ => panic!("Trim Attribute can only support [String] [&str] type!"),
+    }
 }
 
 pub(crate) fn field_has_attr(field: &Field, attr: &str) -> bool {
@@ -204,15 +151,12 @@ pub(crate) fn field_has_attr(field: &Field, attr: &str) -> bool {
         panic!("Attribute only enabled for {:?}", ATTRS);
     }
 
-    if field.attrs.len() == 0 {
+    if field.attrs.is_empty() {
         //no any attributes means no
         return false;
     };
 
-    let attr_op = field
-        .attrs
-        .iter()
-        .find(|attr| attr.path().is_ident(NO_CHAIN));
+    let attr_op = field.attrs.iter().find(|at| at.path().is_ident(attr));
     if attr_op.is_none() {
         return false;
     } //no
@@ -225,6 +169,5 @@ pub(crate) fn get_fields<'a>(fields: &'a FieldsNamed, ident: &'a str) -> Vec<&'a
         .named
         .iter()
         .filter(|field| !is_skip_ident(field, ident))
-        .map(|f| f)
         .collect()
 }
