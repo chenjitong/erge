@@ -1,4 +1,4 @@
-use strut_macro::{Default, Get, Mut, New, Set, ToString, With};
+use strut_macro::{Default, Get, Mut, New, Set, ToDbg, ToString, With};
 
 // struct Kkk {
 //     v1: String,
@@ -37,7 +37,7 @@ use strut_macro::{Default, Get, Mut, New, Set, ToString, With};
 //     }
 // }
 
-#[derive(Set, Get, Mut, With, New, Default, ToString, Clone)]
+#[derive(Set, Get, Mut, With, New, Default, ToString, Clone, ToDbg)]
 struct TSet<'a> {
     #[Skip [Mut]] //v1 skip Set and Get
     v1: String,
@@ -162,6 +162,11 @@ mod tests {
             "display {} \n display fmt {:#}\n debug {:?} \n debug fmt {:#?}",
             t, t, t, t
         );
+
+        dbg!(t.clone().to_dbg());
+        dbg!(t.clone().to_dbg_graceful());
+
+        println!("\n {} \n {}", t.to_dbg(), t.to_dbg_graceful());
         // ::std::fmt::Formatter::
     }
 }

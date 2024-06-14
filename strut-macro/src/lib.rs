@@ -8,6 +8,7 @@ use get_mut::get_mut_field;
 use new::new_all;
 use proc_macro::TokenStream;
 use set::set_field;
+use to_dbg::to_dbg_impl;
 use to_string::to_string_impl;
 use with::with_field;
 
@@ -18,6 +19,7 @@ mod get;
 mod get_mut;
 mod new;
 mod set;
+mod to_dbg;
 mod to_string;
 mod util;
 mod with;
@@ -147,8 +149,12 @@ pub fn display(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(ToString)]
 pub fn to_string(input: TokenStream) -> TokenStream {
     TokenStream::from_iter(vec![
-        debug_impl(input.clone()),
         display_impl(input.clone()),
         to_string_impl(input.clone()),
     ])
+}
+
+#[proc_macro_derive(ToDbg)]
+pub fn to_dbg(input: TokenStream) -> TokenStream {
+    TokenStream::from_iter(vec![debug_impl(input.clone()), to_dbg_impl(input.clone())])
 }
