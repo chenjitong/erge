@@ -26,11 +26,12 @@ const SET: &str = "Set";
 const GET: &str = "Get";
 const MUT: &str = "Mut";
 const WITH: &str = "With";
+const DISPLAY: &str = "Display";
 const SKIP: &str = "Skip";
 const TRIM: &str = "Trim";
 const NO_CHAIN: &str = "NoChain";
 const ATTRS: [&str; 3] = [SKIP, TRIM, NO_CHAIN];
-const SKIP_ENABLE: [&str; 4] = [SET, GET, MUT, WITH];
+const SKIP_ENABLE: [&str; 5] = [SET, GET, MUT, WITH, DISPLAY];
 
 const TRIM_STRING: &str = "String";
 const TRIM_STR: &str = "str";
@@ -138,7 +139,7 @@ pub fn debug(input: TokenStream) -> TokenStream {
 ///     }
 /// }
 /// ```
-#[proc_macro_derive(Display)]
+#[proc_macro_derive(Display, attributes(Skip))]
 pub fn display(input: TokenStream) -> TokenStream {
     display_impl(input)
 }
