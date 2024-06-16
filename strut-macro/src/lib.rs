@@ -69,7 +69,7 @@ pub fn new(input: TokenStream) -> TokenStream {
 /// # 1.支持
 /// ```rust
 /// #[derive(Default)] // 整个结构体可用 Default
-/// struct Stru<`a>{
+/// struct Stru<'a>{
 ///     v1 : String // 支持 default
 ///     v2 : bool // 支持 default
 ///     v3 : &'a str // 支持 default
@@ -78,7 +78,7 @@ pub fn new(input: TokenStream) -> TokenStream {
 ///
 /// # 2.不支持
 /// ```rust
-/// struct Stru<`a>{ // 整个结构体不可用 Default
+/// struct Stru<'a>{ // 整个结构体不可用 Default
 ///     v1 : &'a String, // 不支持 default
 ///     ...
 /// }
