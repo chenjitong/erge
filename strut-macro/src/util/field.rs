@@ -108,6 +108,11 @@ pub(crate) fn is_skip_ident(field: &Field, ident: &str) -> bool {
     rs
 }
 
+/// 获取成员 trim 元代码语句
+///
+/// # Panics
+///
+/// Panics if 不支持 trim 的成员类型
 pub(crate) fn get_field_trim(field: &Field) -> TokenStream {
     let f_name = field.ident.to_owned().unwrap();
 
@@ -145,6 +150,11 @@ pub(crate) fn get_field_trim(field: &Field) -> TokenStream {
     }
 }
 
+/// 检查一个成员是否被标注给定的属性宏
+///
+/// # Panics
+///
+/// Panics if 给定的属性宏不在允许范围内
 pub(crate) fn field_has_attr(field: &Field, attr: &str) -> bool {
     // 检查 attribute 支持宏范围
     if !ATTRS.iter().any(|i| attr.eq(*i)) {
@@ -169,5 +179,14 @@ pub(crate) fn get_fields<'a>(fields: &'a FieldsNamed, ident: &'a str) -> Vec<&'a
         .named
         .iter()
         .filter(|field| !is_skip_ident(field, ident))
+        .collect()
+}
+
+/// 取得当前派生宏略过的成员变量列表
+pub(crate) fn get_skip_fields<'a>(fields: &'a FieldsNamed, ident: &'a str) -> Vec<&'a Field> {
+    fields
+        .named
+        .iter()
+        .filter(|field| is_skip_ident(field, ident))
         .collect()
 }
