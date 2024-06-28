@@ -15,6 +15,7 @@ use with::with_field;
 mod debug;
 mod default;
 mod display;
+mod equals;
 mod get;
 mod get_mut;
 mod new;
