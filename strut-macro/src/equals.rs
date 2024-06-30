@@ -3,10 +3,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
-use crate::{
-    util::field::{chk_named_st, chk_st, get_fields, get_skip_fields},
-    DISPLAY,
-};
+use crate::util::field::{chk_named_st, chk_st};
 
 /// 为结构体提供默认的 [`Equals`] 实现
 ///
@@ -41,6 +38,9 @@ pub(crate) fn equals_impl(input: TokenStream) -> TokenStream {
         quote! {#fname : _,}
     });
 
+    let refs_a_pe = refs_a.clone();
+    let refs_b_pe = refs_b.clone();
+
     let eq_condition = fields.named.iter().map(|f| {
         let fname = f.ident.clone().unwrap();
         quote! {
@@ -54,29 +54,58 @@ pub(crate) fn equals_impl(input: TokenStream) -> TokenStream {
         }
     });
 
-    // display 的 formatter 对每个非 skip 成员变量的处理
-    let fields_fmt = filter_fields.iter().map(|f| {
-        let fname = f.ident.clone().unwrap();
-        let fname_str = fname.to_string();
-        quote! {
-            .field(#fname_str, &#fname )
+    // 实现的 equals 的函数体
+    let equals = quote! {
+        impl #impl_g for #st_name #ty_g #where_c {
+            fn equals(&self, other : &#st_name #ty_g) -> {
+                self.eq(&other)
+            }
         }
-    });
+    };
 
-    // 实现的 display 的 fmt 函数的函数体
-    let display_fmt = quote! {
-        let #st_name{#(#refs)*#(#refs_skiped)*} : &#st_name = self;
-        let name = ::core::any::type_name::<#st_name>();
-        f.debug_struct(name)
-            #(#fields_fmt)*
-            .finish()
+    // 实现的 eq 的函数体
+    let eq = quote! {
+        impl #impl_g std::core:;cmp::PartialEq for #st_name #ty_g #where_c {
+            fn eq(&self, other: &#st_name #ty_g) -> bool{
+                match *other{
+                    #st_name {
+                        #(#refs_b)*
+                    } => match *self{
+                        #st_name {
+                            #(#refs_a)*
+                        }=>{
+                            #(#eq_condition)*
+                            true
+                        }
+                    },
+                }
+            }
+        }
+    };
+
+    // 实现的 ne 的函数体
+    let ne = quote! {
+        impl #impl_g std::core:;cmp::PartialEq for #st_name #ty_g #where_c {
+            fn ne(&self, other : &#st_name #ty_g) -> bool{
+                match *other {
+                    #st_name {
+                        #(#refs_b_pe)*
+                    }=>match *self{
+                        #st_name{
+                            #(#refs_a_pe)*
+                        }=>{
+                            #(#ne_condition)*
+                            false
+                        }
+                    },
+                }
+            }
+        }
     };
 
     TokenStream::from(quote! {
-        impl #impl_g ::std::fmt::Display for #st_name #ty_g #where_c {
-            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-                #display_fmt
-            }
-        }
+        #equals
+        #eq
+        #ne
     })
 }
