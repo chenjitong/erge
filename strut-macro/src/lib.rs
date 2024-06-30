@@ -3,6 +3,7 @@ extern crate proc_macro;
 use debug::debug_impl;
 use default::default_new;
 use display::display_impl;
+use equals::equals_impl;
 use get::get_field;
 use get_mut::get_mut_field;
 use new::new_all;
@@ -158,4 +159,9 @@ pub fn to_string(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(ToDbg)]
 pub fn to_dbg(input: TokenStream) -> TokenStream {
     TokenStream::from_iter(vec![debug_impl(input.clone()), to_dbg_impl(input.clone())])
+}
+
+#[proc_macro_derive(Equals)]
+pub fn equals(input: TokenStream) -> TokenStream {
+    equals_impl(input)
 }
